@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+# Virtual envs
+.venv/
+venv/
+env/
+# IDE
+.vscode/
+.idea/
+# Project data
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+data/backups/
+!data/.gitkeep
+temp/*
+!temp/.gitkeep
+# Secrets
+.env
+*.log
