@@ -32,7 +32,7 @@ class AuthService:
     def save_session(self,user:dict,session):
         session['user_id']=user['id']
     def clear_session(self,session):
-        session.clear()
+        session.clear()#q
     @staticmethod
     def _public_view(user:dict):
         return {
