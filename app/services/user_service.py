@@ -1,6 +1,8 @@
 from app.models.user import UserUpdate
+from app.repositories.audit_log_repository import audit_log_repository
 from app.repositories.user_repository import user_repository
 from app.utils.errors import BadRequestError, NotFoundError
+from app.utils.id_gen import generate_uuid
 from app.utils.time import now_utc
 class UserService:
     async def list_users(self, page: int = 1, page_size: int = 20) -> dict:
@@ -32,6 +34,28 @@ class UserService:
         ok = await user_repository.update(user_id, update_dict)
         if not ok:
             raise NotFoundError("user not found")
+        if updates.role is not None:
+            await audit_log_repository.create({
+                "id": generate_uuid(),
+                "operator_id": current_user["id"],
+                "action": "UPDATE_USER_ROLE",
+                "target_type": "user",
+                "target_id": user_id,
+                "success": True,
+                "detail": f"role set to {updates.role.value}",
+                "created_at": now_utc(),
+            })
+        if updates.is_active is False:
+            await audit_log_repository.create({
+                "id": generate_uuid(),
+                "operator_id": current_user["id"],
+                "action": "DISABLE_USER",
+                "target_type": "user",
+                "target_id": user_id,
+                "success": True,
+                "detail": None,
+                "created_at": now_utc(),
+            })
         updated = await user_repository.get_by_id(user_id)
         return self._public_view(updated)
     @staticmethod

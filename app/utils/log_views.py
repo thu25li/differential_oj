@@ -24,6 +24,7 @@ def to_student_log_view(case_log: dict) -> dict:
     return view
 def to_teacher_log_view(case_log: dict) -> dict:
     return {
+        "submission_id": case_log.get("submission_id"),
         "case_id": case_log["case_id"],
         "result": case_log["result"],
         "score": case_log["score"],
