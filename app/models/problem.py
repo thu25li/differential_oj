@@ -11,6 +11,7 @@ class Sample(BaseModel):
     input: str
     output: str
 class TestCaseCreate(BaseModel):
+    __test__=False
     case_id: str = Field(min_length=1, max_length=32)
     input: str
     output: str
