@@ -9,6 +9,7 @@ from app.database import close_database, init_database
 from app.routers import auth as auth_router
 from app.routers import problems as problems_router
 from app.utils.errors import OJError
+from app.routers import users as users_router
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 @asynccontextmanager
@@ -24,6 +25,7 @@ SECRET_KEY = os.environ.get("OJ_SECRET_KEY",
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 app.include_router(auth_router.router)
 app.include_router(problems_router.router)
+app.include_router(users_router.router)
 @app.exception_handler(OJError)
 async def oj_error_handler(request: Request, exc: OJError):
     return JSONResponse(
