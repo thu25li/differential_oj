@@ -2,12 +2,14 @@ import asyncio
 import logging
 from app.models.submission import SubmissionCreate
 from app.repositories.audit_log_repository import audit_log_repository
+from app.repositories.case_log_repository import case_log_repository
 from app.repositories.problem_repository import problem_repository
 from app.repositories.submission_repository import submission_repository
 from app.utils.errors import (
     BadRequestError, ConflictError, ForbiddenError, NotFoundError,
 )
 from app.utils.id_gen import generate_uuid
+from app.utils.log_utils import truncate_text
 from app.utils.time import now_utc
 logger = logging.getLogger(__name__)
 _pending_tasks: set = set()
@@ -62,6 +64,7 @@ class SubmissionService:
         ok = await submission_repository.reset_for_rejudge(submission_id)
         if not ok:
             raise NotFoundError("submission not found")
+        await case_log_repository.delete_by_submission(submission_id)
         await audit_log_repository.create({
             "id": generate_uuid(),
             "operator_id": current_user["id"],
@@ -107,6 +110,27 @@ class SubmissionService:
                 total_time=result.total_time,
                 finished_at=now_utc(),
             )
+            ts = now_utc()
+            case_logs = [
+                {
+                    "submission_id": submission_id,
+                    "case_id": cr.case_id,
+                    "result": cr.result,
+                    "score": cr.score,
+                    "time_used": cr.time_used,
+                    "memory_used": None,
+                    "exit_code": cr.exit_code,
+                    "input_data": truncate_text(cr.input_data),
+                    "stdout": truncate_text(cr.stdout),
+                    "stderr": truncate_text(cr.stderr),
+                    "expected_output": truncate_text(cr.expected_output),
+                    "message": cr.message,
+                    "is_hidden": cr.is_hidden,
+                    "created_at": ts,
+                }
+                for cr in result.cases
+            ]
+            await case_log_repository.create_batch(case_logs)
         except Exception:
             logger.exception("judging failed for submission %s", submission_id)
             try:

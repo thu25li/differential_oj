@@ -19,6 +19,8 @@ class CaseResult:
     stderr: str
     is_hidden: bool
     message: str = ""
+    input_data: str = ""
+    expected_output: str = ""
 def create_submission_dir(source_code: str) -> Path:
     submission_uuid = uuid.uuid4().hex
     temp_dir = Path(tempfile.gettempdir()) / "oj_submissions" / submission_uuid
@@ -54,6 +56,7 @@ async def run_single_case(
             case_id=case_id, result="SE", score=0, time_used=0.0,
             exit_code=None, stdout="", stderr=str(e),
             is_hidden=is_hidden, message="failed to spawn subprocess",
+            input_data=stdin_data, expected_output=expected_output,
         )
     try:
         stdout_bytes, stderr_bytes = await asyncio.wait_for(
@@ -66,6 +69,7 @@ async def run_single_case(
             case_id=case_id, result="TLE", score=0, time_used=time_limit,
             exit_code=None, stdout="", stderr="",
             is_hidden=is_hidden, message=f"time limit exceeded ({time_limit}s)",
+            input_data=stdin_data, expected_output=expected_output,
         )
     except Exception as e:
         await _kill_proc(proc)
@@ -73,6 +77,7 @@ async def run_single_case(
             case_id=case_id, result="SE", score=0, time_used=0.0,
             exit_code=None, stdout="", stderr=str(e),
             is_hidden=is_hidden, message="subprocess communication error",
+            input_data=stdin_data, expected_output=expected_output,
         )
     elapsed = time.monotonic() - start
     exit_code = proc.returncode
@@ -87,6 +92,7 @@ async def run_single_case(
             case_id=case_id, result="RE", score=0, time_used=elapsed,
             exit_code=exit_code, stdout="", stderr=stderr,
             is_hidden=is_hidden, message="program output is not valid UTF-8",
+            input_data=stdin_data, expected_output=expected_output,
         )
     try:
         stderr = stderr_bytes.decode("utf-8")
@@ -97,17 +103,20 @@ async def run_single_case(
             case_id=case_id, result="RE", score=0, time_used=elapsed,
             exit_code=exit_code, stdout=stdout, stderr=stderr,
             is_hidden=is_hidden, message=f"non-zero exit code: {exit_code}",
+            input_data=stdin_data, expected_output=expected_output,
         )
     if compare_output(stdout, expected_output):
         return CaseResult(
             case_id=case_id, result="AC", score=score, time_used=elapsed,
             exit_code=exit_code, stdout=stdout, stderr=stderr,
             is_hidden=is_hidden, message="accepted",
+            input_data=stdin_data, expected_output=expected_output,
         )
     return CaseResult(
         case_id=case_id, result="WA", score=0, time_used=elapsed,
         exit_code=exit_code, stdout=stdout, stderr=stderr,
         is_hidden=is_hidden, message="wrong answer",
+        input_data=stdin_data, expected_output=expected_output,
     )
 async def _kill_proc(proc: asyncio.subprocess.Process) -> None:
     try:
