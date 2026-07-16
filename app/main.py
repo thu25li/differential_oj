@@ -14,6 +14,7 @@ from app.routers import users as users_router
 from app.routers import submissions as submissions_router
 from app.routers import logs as logs_router
 from app.routers import admin as admin_router
+from app.routers import similarity as similarity_router
 from app.routers import pages as pages_router
 from app.utils.errors import OJError
 logging.basicConfig(level=logging.INFO)
@@ -38,6 +39,7 @@ app.include_router(users_router.router)
 app.include_router(submissions_router.router)
 app.include_router(logs_router.router)
 app.include_router(admin_router.router)
+app.include_router(similarity_router.router)
 app.include_router(pages_router.router)
 @app.exception_handler(OJError)
 async def oj_error_handler(request: Request, exc: OJError):

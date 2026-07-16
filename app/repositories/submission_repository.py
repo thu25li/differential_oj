@@ -162,6 +162,19 @@ class SubmissionRepository:
             "SELECT 1 FROM submissions WHERE id = ?", (submission_id,)
         )
         return await cursor.fetchone() is not None
+    async def list_sources_by_problem(self, problem_id: str) -> List[dict]:
+        db = await get_db()
+        cursor = await db.execute(
+            """SELECT id, user_id, source_code FROM submissions
+               WHERE problem_id = ? AND status IN ('finished', 'failed')
+               ORDER BY id""",
+            (problem_id,),
+        )
+        rows = await cursor.fetchall()
+        return [
+            {"id": r["id"], "user_id": r["user_id"], "source_code": r["source_code"]}
+            for r in rows
+        ]
     @staticmethod
     def _row_to_dict(row, include_source: bool = True) -> dict:
         d = {
