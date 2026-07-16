@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}备份管理{% endblock %}
+{% block content %}
+<section class="card">
+<h1>备份管理（管理员）</h1>
+<p>
+<button class="btn btn-primary" onclick="createBackup()">+ 创建备份</button>
+</p>
+<p id="flash" class="flash" style="display:none"></p>
+<div id="empty" class="empty" style="display:none">暂无备份</div>
+<table id="backups-table" style="display:none">
+<thead>
+<tr><th>备份编号</th><th>创建时间</th><th>类型</th><th>文件数</th><th>大小</th><th>操作</th></tr>
+</thead>
+<tbody id="backups-body"></tbody>
+</table>
+<p id="loading" class="muted">加载中...</p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/admin_backups.js"></script>
+<script>
+(async function() {
+    const user = await requireRole(['admin']);
+    if (!user) return;
+    await loadBackups();
+})();
+</script>
+{% endblock %}

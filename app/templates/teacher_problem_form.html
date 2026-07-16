@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == "create" %}创建题目{% else %}编辑题目 {{ problem_id }}{% endif %}{% endblock %}
+{% block content %}
+<section class="card">
+<h1>{% if mode == "create" %}创建题目{% else %}编辑题目 {{ problem_id }}{% endif %}</h1>
+<p id="flash" class="flash" style="display:none"></p>
+<form id="problem-form" onsubmit="event.preventDefault(); handleSubmit();" class="form">
+{% if mode == "create" %}
+<div class="form-row">
+<label for="id">题目编号（1-32 字符，字母数字下划线连字符）</label>
+<input type="text" id="id" required maxlength="32" pattern="[A-Za-z0-9_\-]+">
+</div>
+{% else %}
+<div class="form-row">
+<label>题目编号</label>
+<input type="text" value="{{ problem_id }}" disabled>
+</div>
+{% endif %}
+<div class="form-row">
+<label for="title">标题（1-100 字符）</label>
+<input type="text" id="title" required maxlength="100">
+</div>
+<div class="form-row">
+<label for="description">题目描述</label>
+<textarea id="description" required rows="4"></textarea>
+</div>
+<div class="form-row">
+<label for="input_description">输入说明</label>
+<textarea id="input_description" required rows="2"></textarea>
+</div>
+<div class="form-row">
+<label for="output_description">输出说明</label>
+<textarea id="output_description" required rows="2"></textarea>
+</div>
+<div class="form-row">
+<label for="samples">样例（每行一对，格式：输入 ||| 输出；多个样例空行分开）</label>
+<textarea id="samples" rows="4" placeholder="1 2 ||| 3&#10;&#10;10 20 ||| 30"></textarea>
+</div>
+<div class="form-row">
+<label for="constraints">约束（可选）</label>
+<input type="text" id="constraints">
+</div>
+<div class="form-row">
+<label for="time_limit">时间限制（秒，大于 0）</label>
+<input type="number" id="time_limit" step="0.1" min="0.1" required value="1.0">
+</div>
+<div class="form-row">
+<label for="memory_limit">内存限制（MB，大于 0）</label>
+<input type="number" id="memory_limit" step="1" min="1" required value="128">
+</div>
+<div class="form-row">
+<label for="difficulty">难度</label>
+<select id="difficulty">
+<option value="easy">easy</option>
+<option value="medium">medium</option>
+<option value="hard">hard</option>
+</select>
+</div>
+<div class="form-row">
+<label for="tags">标签（逗号分隔）</label>
+<input type="text" id="tags" placeholder="基础, 输入输出">
+</div>
+<div class="form-row">
+<label>测试点（case_id ||| input ||| output ||| 分值 ||| 是否隐藏（true/false），多个测试点空行分开）</label>
+<textarea id="test_cases" rows="6" placeholder="case_01 ||| 1 2&#10; ||| 3&#10; ||| 50 ||| false&#10;&#10;case_02 ||| -1 2&#10; ||| 1&#10; ||| 50 ||| true"></textarea>
+<p class="muted">注意：分值总和必须等于 100。</p>
+</div>
+<button type="submit" class="btn btn-primary">{% if mode == "create" %}创建{% else %}保存{% endif %}</button>
+<a href="/teacher/problems" class="btn">取消</a>
+<p id="error-msg" class="error"></p>
+</form>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/teacher_problem_form.js"></script>
+<script>
+(async function() {
+    const user = await requireRole(['teacher', 'admin']);
+    if (!user) return;
+    await initForm('{{ mode }}', '{{ problem_id }}');
+})();
+</script>
+{% endblock %}

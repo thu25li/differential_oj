@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}题目管理{% endblock %}
+{% block content %}
+<section class="card">
+<h1>题目管理（教师）</h1>
+<p><a href="/teacher/problems/new" class="btn btn-primary">+ 创建题目</a></p>
+<p id="flash" class="flash" style="display:none"></p>
+<div id="empty" class="empty" style="display:none">暂无题目</div>
+<table id="problems-table" style="display:none">
+<thead>
+<tr><th>编号</th><th>标题</th><th>难度</th><th>测试点数</th><th>创建时间</th><th>操作</th></tr>
+</thead>
+<tbody id="problems-body"></tbody>
+</table>
+<p id="loading" class="muted">加载中...</p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/teacher_problems.js"></script>
+<script>
+(async function() {
+    const user = await requireRole(['teacher', 'admin']);
+    if (!user) return;
+    await loadTeacherProblems();
+})();
+</script>
+{% endblock %}

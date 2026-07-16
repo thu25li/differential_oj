@@ -26,4 +26,16 @@ async def submissions_page(request: Request):
 @router.get("/submissions/{submission_id}")
 async def submission_detail_page(request: Request, submission_id: str):
     return templates.TemplateResponse(request, "submission_detail.html", {"request": request, "submission_id": submission_id})
+@router.get("/teacher/problems")
+async def teacher_problems_page(request: Request):
+    return templates.TemplateResponse(request, "teacher_problems.html", {"request": request})
+@router.get("/teacher/problems/new")
+async def teacher_problem_new_page(request: Request):
+    return templates.TemplateResponse(request, "teacher_problem_form.html", {"request": request, "mode": "create", "problem_id": ""})
+@router.get("/teacher/problems/{problem_id}/edit")
+async def teacher_problem_edit_page(request: Request, problem_id: str):
+    return templates.TemplateResponse(request, "teacher_problem_form.html", {"request": request, "mode": "edit", "problem_id": problem_id})
+@router.get("/admin/backups")
+async def admin_backups_page(request: Request):
+    return templates.TemplateResponse(request, "admin_backups.html", {"request": request})
 __all__ = ["router"]
