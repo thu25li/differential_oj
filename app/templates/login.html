@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}登录{% endblock %}
+{% block content %}
+<section class="card narrow">
+<h1>登录</h1>
+<form id="login-form" onsubmit="event.preventDefault(); handleLogin();" class="form">
+<div class="form-row">
+<label for="username">用户名</label>
+<input type="text" id="username" required minlength="3" maxlength="32">
+</div>
+<div class="form-row">
+<label for="password">密码</label>
+<input type="password" id="password" required minlength="8">
+</div>
+<button type="submit" class="btn btn-primary">登录</button>
+<p id="error-msg" class="error"></p>
+</form>
+<p class="muted">没有账号？ <a href="/register">去注册</a></p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+async function handleLogin() {
+    const u = document.getElementById('username').value;
+    const p = document.getElementById('password').value;
+    document.getElementById('error-msg').textContent = '';
+    try {
+        await doLogin(u, p);
+    } catch (e) {
+        document.getElementById('error-msg').textContent = e.message;
+    }
+}
+</script>
+{% endblock %}

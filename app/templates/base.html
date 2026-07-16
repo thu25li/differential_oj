@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}OJ{% endblock %} - Differential OJ</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="brand" href="/">Differential OJ</a>
+<nav class="nav-links" id="nav-links"></nav>
+<div class="user-box">
+<span id="user-info"></span>
+<button id="logout-btn" class="btn btn-link" style="display:none" onclick="doLogout()">登出</button>
+</div>
+</div>
+</header>
+<main class="container">
+{% block content %}{% endblock %}
+</main>
+<script src="/static/js/api.js"></script>
+<script src="/static/js/auth.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
