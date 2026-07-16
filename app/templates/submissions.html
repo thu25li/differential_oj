@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}我的提交{% endblock %}
+{% block content %}
+<section class="card">
+<h1>我的提交</h1>
+<p id="flash" class="flash" style="display:none"></p>
+<div id="empty" class="empty" style="display:none">暂无提交</div>
+<table id="subs-table" style="display:none">
+<thead>
+<tr><th>提交时间</th><th>题目</th><th>状态</th><th>结果</th><th>得分</th><th>用时</th></tr>
+</thead>
+<tbody id="subs-body"></tbody>
+</table>
+<p id="loading" class="muted">加载中...</p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/submissions.js"></script>
+<script>
+(async function() {
+    const user = await requireLogin();
+    if (!user) return;
+    await loadMySubmissions();
+})();
+</script>
+{% endblock %}

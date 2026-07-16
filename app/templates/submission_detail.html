@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}提交 {{ submission_id }}{% endblock %}
+{% block content %}
+<section class="card">
+<p id="loading" class="muted">加载中...</p>
+<div id="body" style="display:none">
+<h1>提交详情</h1>
+<p><strong>提交编号：</strong><code>{{ submission_id }}</code></p>
+<p><strong>题目：</strong><a id="problem-link" href="#">加载中...</a></p>
+<p><strong>状态：</strong><span id="status" class="badge"></span></p>
+<p><strong>结果：</strong><span id="result"></span></p>
+<p><strong>得分：</strong><span id="score"></span></p>
+<p><strong>总用时：</strong><span id="total-time"></span></p>
+<p id="hint" class="muted"></p>
+</div>
+<h3>测试点日志</h3>
+<div id="cases" class="case-list"></div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/submission_detail.js"></script>
+<script>
+(async function() {
+    const user = await requireLogin();
+    if (!user) return;
+    await pollSubmission('{{ submission_id }}');
+})();
+</script>
+{% endblock %}

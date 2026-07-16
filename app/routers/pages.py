@@ -14,4 +14,16 @@ async def login_page(request: Request):
 @router.get("/register")
 async def register_page(request: Request):
     return templates.TemplateResponse(request, "register.html", {"request": request})
+@router.get("/problems")
+async def problems_page(request: Request):
+    return templates.TemplateResponse(request, "problems.html", {"request": request})
+@router.get("/problems/{problem_id}")
+async def problem_detail_page(request: Request, problem_id: str):
+    return templates.TemplateResponse(request, "problem_detail.html", {"request": request, "problem_id": problem_id})
+@router.get("/submissions")
+async def submissions_page(request: Request):
+    return templates.TemplateResponse(request, "submissions.html", {"request": request})
+@router.get("/submissions/{submission_id}")
+async def submission_detail_page(request: Request, submission_id: str):
+    return templates.TemplateResponse(request, "submission_detail.html", {"request": request, "submission_id": submission_id})
 __all__ = ["router"]

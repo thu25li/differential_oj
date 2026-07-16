@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}题目 {{ problem_id }}{% endblock %}
+{% block content %}
+<section class="card">
+<p id="loading" class="muted">加载中...</p>
+<div id="problem-body" style="display:none">
+<h1 id="title"></h1>
+<p>
+<span id="difficulty" class="badge"></span>
+<span id="tags"></span>
+<span class="muted"> 时间限制 <span id="time-limit"></span>s · 内存限制 <span id="memory-limit"></span>MB</span>
+</p>
+<h3>题目描述</h3>
+<div id="description" class="problem-stmt"></div>
+<h3>输入说明</h3>
+<div id="input-description" class="problem-stmt"></div>
+<h3>输出说明</h3>
+<div id="output-description" class="problem-stmt"></div>
+<h3>样例</h3>
+<div id="samples"></div>
+<h3>约束</h3>
+<div id="constraints" class="problem-stmt"></div>
+</div>
+</section>
+<section class="card">
+<h2>提交代码</h2>
+<form id="submit-form" onsubmit="event.preventDefault(); handleSubmit('{{ problem_id }}');" class="form">
+<div class="form-row">
+<label for="source-code">Python 代码</label>
+<textarea id="source-code" class="code" placeholder="# 在此输入你的 Python 代码"></textarea>
+</div>
+<button type="submit" class="btn btn-primary">提交</button>
+<p id="error-msg" class="error"></p>
+</form>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/problems.js"></script>
+<script>
+(async function() {
+    const user = await requireLogin();
+    if (!user) return;
+    await loadProblem('{{ problem_id }}');
+})();
+async function handleSubmit(pid) {
+    const code = document.getElementById('source-code').value;
+    document.getElementById('error-msg').textContent = '';
+    try {
+        const r = await api('POST', '/api/submissions', {
+            problem_id: pid,
+            language: 'python',
+            source_code: code,
+        });
+        if (r && r.data && r.data.submission_id) {
+            window.location.href = '/submissions/' + r.data.submission_id;
+        }
+    } catch (e) {
+        document.getElementById('error-msg').textContent = e.message;
+    }
+}
+</script>
+{% endblock %}
