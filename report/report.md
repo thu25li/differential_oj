@@ -28,6 +28,20 @@
 
 **其他（10 分）**：代码规范与自动化测试（5 分）+ 实验报告（5 分）。
 
+### 1.2.1 前端页面清单
+
+- 登录 / 注册 / 登出
+- 题目列表 / 题目详情（学生视图不含测试点）
+- 代码提交 + 提交详情轮询
+- 学生"我的提交" + 教师/管理员"全部提交记录"（含筛选器）
+- 教师题目管理（CRUD）
+- 教师相似度检测页（触发查重 + 查看报告）
+- 教师/管理员测试点日志页（按题目/提交/结果筛选，显示用户名）
+- 管理员用户管理（改角色 / 启用禁用 / 删除，自身操作按钮自动隐藏）
+- 管理员审计日志页（按动作 / 操作者用户名筛选）
+- 管理员备份管理（创建 / 恢复）
+- 提交详情：教师/管理员"重新评测"按钮；所有用户"用原代码重新提交"按钮
+
 ### 1.3 未完成功能
 
 - Adv 1 Special Judge（未选做）
@@ -127,7 +141,7 @@ SQLite，WAL 模式，启用外键约束。所有 8 张表见 `app/schema.sql`�
 日志分两类：
 
 - `case_logs`：测试点级日志，存原始 input/stdout/stderr/expected_output（持久化前截断到 4000 字符）
-- `audit_logs`：审计日志，6 种动作（VIEW_FULL_JUDGE_LOG / REJUDGE_SUBMISSION / UPDATE_USER_ROLE / DISABLE_USER / CREATE_BACKUP / RESTORE_BACKUP）
+- `audit_logs`：审计日志，7 种动作（VIEW_FULL_JUDGE_LOG / REJUDGE_SUBMISSION / UPDATE_USER_ROLE / DISABLE_USER / DELETE_USER / CREATE_BACKUP / RESTORE_BACKUP）
 
 日志可见性由 `app/utils/log_views.py` 的 `to_student_log_view` 和 `to_teacher_log_view` 控制。
 
@@ -193,7 +207,7 @@ SQLite，WAL 模式，启用外键约束。所有 8 张表见 `app/schema.sql`�
 
 #### audit_logs（审计日志）
 
-`action` 字段有 CHECK 约束，限定 6 种动作。
+`action` 字段有 CHECK 约束，限定 7 种动作（含 DELETE_USER）。
 
 #### backup_records（备份记录）
 
@@ -313,6 +327,17 @@ pending → failed                （评测启动前致命错误）
 
 `update_result` 根据 result 自动决定 status：result=SE → status=failed；其他 → status=finished。
 
+### 4.5.1 重新评测与重新提交
+
+**重新评测（教师/管理员）**：`POST /api/submissions/{id}/rejudge`
+
+- 仅允许在 `finished` 或 `failed` 状态下触发（pending/running 返回 409）
+- 学生调用返回 403（规范禁止学生重新评测）
+- 流程：`reset_for_rejudge` 清空结果字段 → 状态回 `pending` → 重新调度评测
+- 写 `REJUDGE_SUBMISSION` 审计日志
+
+**用原代码重新提交（所有用户）**：前端按钮调 `GET /api/submissions/{id}` 取回 `source_code`，再 `POST /api/submissions` 创建新提交。学生只能取回自己的提交（后端 403 校验），所以无法借此窥探他人代码。
+
 ### 4.6 权限校验
 
 依赖链 `app/utils/auth.py`：
@@ -333,6 +358,16 @@ require_admin             # role == admin
 
 - 前端 JS：`requireRole(...)` 不符时显示提示
 - 后端路由：`Depends(require_*)` 强制校验，绝不依赖前端
+
+### 4.6.1 管理员自保护
+
+`user_service.update_user` 拒绝三种危险操作：
+
+- 不能改自己的角色（防止管理员把自己降级成学生锁死系统）
+- 不能禁用/删除自己
+- 不能降级最后一个管理员（`user_repository.count_admins() <= 1` 时拒绝）
+
+前端在用户管理表格里对"自己"那一行隐藏所有操作按钮并显示 `(你)` 标签，但即使绕过前端直接调 API，后端依然 400 拒绝。
 
 ### 4.7 隐藏测试点保护
 
@@ -441,8 +476,9 @@ def compute_similarity(a: str, b: str) -> float:
 | GET | `/api/users` | admin | 分页列表 |
 | GET | `/api/users/{id}` | admin | 用户详情 |
 | PUT | `/api/users/{id}` | admin | 修改 role / is_active |
+| DELETE | `/api/users/{id}` | admin | 删除用户（保留历史提交和日志） |
 
-错误码：404（用户不存在）/400（禁用自己）/403（非 admin）。
+错误码：404（用户不存在）/400（禁用/删除自己、降级最后一个管理员、改自己角色）/403（非 admin）。
 
 ### 5.3 题目
 
@@ -472,8 +508,8 @@ def compute_similarity(a: str, b: str) -> float:
 | 方法 | 路径 | 权限 | 说明 |
 |---|---|---|---|
 | GET | `/api/submissions/{id}/logs` | 已登录 | 学生视图（脱敏）/ 教师视图（完整） |
-| GET | `/api/logs` | teacher/admin | 多维筛选 + 分页 |
-| GET | `/api/audit-logs` | admin | 多维筛选 + 分页 |
+| GET | `/api/logs` | teacher/admin | 多维筛选 + 分页，返回用户名（LEFT JOIN users） |
+| GET | `/api/audit-logs` | admin | 多维筛选 + 分页，返回操作者用户名，支持 `operator_username` 筛选 |
 
 教师查看 `/api/submissions/{id}/logs` 自动写 `VIEW_FULL_JUDGE_LOG` 审计。
 
@@ -614,6 +650,46 @@ def _schedule_judging(self, submission_id: str) -> None:
 - 教师视图 `to_teacher_log_view`：全字段（路径不脱敏，截断已在持久化前完成）
 
 学生哪怕用 curl 直接调 API，也拿不到隐藏测试点字段。
+
+### 7.5 列表显示用户名（LEFT JOIN users）
+
+**问题**：提交记录、测试点日志、审计日志三个列表只显示 `user_id` / `operator_id`（UUID），前端无法直接看出是谁。
+
+**排查**：仓库层初版只 `SELECT * FROM submissions` 之类，没有 join 用户表。
+
+**解决**：三个 repository 的 `list()` 全部改为 LEFT JOIN：
+
+- `submission_repository.list`：`LEFT JOIN users AS u ON u.id = s.user_id`，SELECT `u.username`
+- `case_log_repository.list`：同样 LEFT JOIN
+- `audit_log_repository.list`：LEFT JOIN，并在 `operator_username` 查询参数上支持模糊匹配
+- COUNT 查询必须同步带上 JOIN 和 WHERE，否则出现 `no such column: u.username` 错误
+
+前端在表格里新增"用户名"列，管理员/教师能直接看到是谁的提交，无需另外查用户。
+
+### 7.6 浏览器缓存导致筛选器无响应
+
+**问题**：在筛选表单输入参数提交后页面"无响应"，刷新也不刷新数据。
+
+**排查**：HTTP 头没显式禁缓存，浏览器复用了旧的 JS 文件，旧 JS 里没有新筛选逻辑。
+
+**解决**：
+
+- 在 `base.html` 加 `<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">`
+- 移除筛选表单里的 UUID 输入字段（用户改用用户名筛选）
+- 强制刷新一次（Ctrl+F5）后所有用户都能拿到新 JS
+
+### 7.7 SQLite 数据库锁定
+
+**问题**：开发中偶发 `sqlite3.OperationalError: database is locked`。
+
+**排查**：Windows 下多个 uvicorn 进程残留，每个进程持有连接；加 WAL 也不能跨进程解锁。
+
+**解决**：
+
+- 杀掉所有残留 python.exe 进程
+- 删除 `data/oj.db-wal` 和 `data/oj.db-shm`
+- 重启服务
+- 日常避免开多个 uvicorn 同时跑
 
 ---
 

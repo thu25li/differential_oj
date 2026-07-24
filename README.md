@@ -90,9 +90,17 @@ $env:OJ_SECRET_KEY = "your_random_secret_for_session"
 - ✅ 提交状态机（pending → running → finished/failed）
 - ✅ 重新评测（写审计日志）
 - ✅ 测试点级日志（学生视图脱敏 + 教师视图完整 + 路径替换 + 4000 字符截断）
-- ✅ 审计日志（VIEW_FULL_JUDGE_LOG / REJUDGE / UPDATE_USER_ROLE / DISABLE_USER / CREATE_BACKUP / RESTORE_BACKUP）
+- ✅ 审计日志（VIEW_FULL_JUDGE_LOG / REJUDGE_SUBMISSION / UPDATE_USER_ROLE / DISABLE_USER / DELETE_USER / CREATE_BACKUP / RESTORE_BACKUP）
 - ✅ 数据持久化（SQLite）+ 备份 + 恢复（manifest.json 校验、损坏备份不破坏当前数据）
 - ✅ 前端：登录、题目列表/详情、代码提交、提交详情轮询、学生提交列表、教师题目管理、管理员备份管理
+- ✅ 管理员用户管理前端（列表 / 改角色 / 启用禁用 / 删除，自带"不能改自己角色"和"最后一个管理员"保护）
+- ✅ 测试点日志页面（教师/管理员查看全部测试点详细输出，按题目/提交/结果筛选）
+- ✅ 审计日志页面（管理员查看，显示操作者用户名，按动作/用户名筛选）
+- ✅ 相似度检测页面（教师触发查重并查看报告）
+- ✅ 提交列表筛选器（按题目/状态/结果/时间范围）
+- ✅ 重新评测按钮（教师/管理员，写审计日志）
+- ✅ 用原代码重新提交按钮（所有用户，跳转新提交）
+- ✅ 提交记录/审计日志/测试点日志均显示用户名（LEFT JOIN users）
 
 ### 进阶模块
 
@@ -105,10 +113,10 @@ $env:OJ_SECRET_KEY = "your_random_secret_for_session"
 | 模块 | 接口 |
 |---|---|
 | 认证 | `POST /api/auth/register` `POST /api/auth/login` `POST /api/auth/logout` `GET /api/auth/me` |
-| 用户 | `GET /api/users` `GET /api/users/{id}` `PUT /api/users/{id}` |
+| 用户 | `GET /api/users` `GET /api/users/{id}` `PUT /api/users/{id}` `DELETE /api/users/{id}` |
 | 题目 | `GET /api/problems` `GET /api/problems/{id}` `POST /api/problems` `PUT /api/problems/{id}` `DELETE /api/problems/{id}` |
 | 提交 | `POST /api/submissions` `GET /api/submissions` `GET /api/submissions/{id}` `POST /api/submissions/{id}/rejudge` |
-| 日志 | `GET /api/submissions/{id}/logs` `GET /api/logs` `GET /api/audit-logs` |
+| 日志 | `GET /api/submissions/{id}/logs` `GET /api/logs` `GET /api/audit-logs`（支持 `operator_username` 筛选） |
 | 备份 | `POST /api/admin/backups` `GET /api/admin/backups` `POST /api/admin/backups/{id}/restore` |
 | 相似度 | `POST /api/problems/{id}/similarity-check` `GET /api/problems/{id}/similarity-reports` |
 
