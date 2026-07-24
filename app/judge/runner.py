@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import shutil
 import sys
 import tempfile
@@ -8,6 +9,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 from app.judge.comparator import compare_output
+logger = logging.getLogger(__name__)
 @dataclass
 class CaseResult:
     case_id: str
@@ -52,9 +54,10 @@ async def run_single_case(
             stderr=asyncio.subprocess.PIPE,
         )
     except Exception as e:
+        logger.exception("failed to spawn subprocess for case %s: %r", case_id, e)
         return CaseResult(
             case_id=case_id, result="SE", score=0, time_used=0.0,
-            exit_code=None, stdout="", stderr=str(e),
+            exit_code=None, stdout="", stderr=f"{type(e).__name__}: {e}",
             is_hidden=is_hidden, message="failed to spawn subprocess",
             input_data=stdin_data, expected_output=expected_output,
         )
