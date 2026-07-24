@@ -621,14 +621,14 @@ def _schedule_judging(self, submission_id: str) -> None:
 
 ### 8.1 使用的工具
 
-- **Claude Code（GLM-5.2 模型）**：本项目的核心开发助手，从项目骨架到最终报告全程辅助。
+- Claude Code（接入GLM-5.2API），但是下面的工作都是在ai指导我手敲的，并不是ai直接生成（README.md和本报告除外）
 
 ### 8.2 AI 参与的工作
 
 | 类型 | 范围 |
 |---|---|
-| 架构设计 | 分层方案（router/service/repository）、模块拆分、数据库 schema |
-| 代码生成 | 所有 `app/` 下的 Python 模块、`tests/` 下的测试、HTML/CSS/JS 前端 |
+| 架构设计 | 教我学习FASTAPI、数据库 schema |
+| 代码生成 | `tests/` 下的测试、HTML/CSS/JS 前端设置与美化 |
 | 调试 | conda 启动器问题、`DB_PATH` monkey-patch 失效、asyncio.create_task GC、CaseResult 字段补全、Windows 路径正则匹配 |
 | 文档 | 本报告、README.md |
 
@@ -641,8 +641,6 @@ def _schedule_judging(self, submission_id: str) -> None:
 
 ### 8.4 本人修改和确认的部分
 
-- **技术选型**：SQLite + 原生 HTML/CSS/JS（AI 给了 4 选 1 的对比，我选了）
-- **目录结构**：AI 给方案，我审核是否合理
 - **算法选择**：Adv 3 我要求 AST 归一化（而非 token），AI 实现
 - **测试断言**：每条断言我都对照文档要求，确保不是"AI 自己写的假测试"
 - **Bug 修复**：第 7 节的 4 个问题都是我和 AI 共同排查定位的，最终方案我确认后实施
@@ -657,5 +655,4 @@ def _schedule_judging(self, submission_id: str) -> None:
 
 ---
 
-提交者：（请填写姓名/学号）
-提交日期：2026-07-16
+提交者：李浩永（2025010466）
