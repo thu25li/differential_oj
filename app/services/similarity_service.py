@@ -38,6 +38,8 @@ class SimilarityService:
         n = len(subs)
         for i in range(n):
             for j in range(i + 1, n):
+                if subs[i]["user_id"] == subs[j]["user_id"]:
+                    continue
                 sim = compute_similarity(subs[i]["source_code"], subs[j]["source_code"])
                 if sim >= threshold:
                     reports.append({

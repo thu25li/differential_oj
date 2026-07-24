@@ -315,6 +315,8 @@ any RE         → RE
 else           → WA
 ```
 
+**短路策略**：一旦某个测试点返回 TLE，立即停止后续测试点的评测（`break`）——TLE 通常意味着死循环，再跑下去只是浪费时间。聚合时只看已跑过的部分，未跑过的测试点不计分。
+
 ### 4.5 提交状态机
 
 `submission_repository.update_status` 和 `update_result` 强制只能走以下路径：
@@ -452,6 +454,8 @@ def compute_similarity(a: str, b: str) -> float:
 | 输出超阈值对 | 默认 0.7，可通过 `OJ_SIMILARITY_THRESHOLD` 配置 |
 | 保存报告 | 写入 `similarity_reports` 表，覆盖式重建 |
 
+**跳过同用户提交**：两两比对时若 `user_id` 相同则 `continue`，不把同一学生的多次提交互相比较（学生自己和自己代码必然相似，加入报告只会产生噪声）。
+
 **仅给出疑似相似结果，不自动标记作弊**——返回的是 `pairs`（提交对）+ 相似度分数，由教师人工判断。
 
 ---
@@ -536,7 +540,7 @@ def compute_similarity(a: str, b: str) -> float:
 
 ### 6.1 总数
 
-`python -m pytest` 共 **199 个测试**，全部 PASSED。
+`python -m pytest` 共 **199 个测试**，全部 PASSED，已通过 `pytest.ini` 的 `filterwarnings = ignore` 和 `-p no:warnings` 关闭 warnings 输出。
 
 ### 6.2 按模块分布
 

@@ -32,6 +32,8 @@ async def judge_submission(
                 time_limit=time_limit,
             )
             case_results.append(result)
+            if result.result == "TLE":
+                break
         return _aggregate(case_results)
     finally:
         cleanup_submission_dir(temp_dir)

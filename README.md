@@ -39,6 +39,8 @@ python -m pytest
 
 当前共 199 个测试，覆盖：题目 CRUD、Python 评测器、用户权限、提交状态机、日志脱敏、备份恢复、相似度检测。
 
+测试输出已禁用 warnings（在 `pytest.ini` 中通过 `filterwarnings = ignore` 和 `addopts = -p no:warnings` 关闭）。
+
 ## 初始管理员账号
 
 首次启动时，系统会自动创建一个默认管理员账号（写入 SQLite 数据库，密码用 bcrypt 哈希）：
