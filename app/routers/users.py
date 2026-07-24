@@ -27,4 +27,11 @@ async def update_user(
 ):
     data = await user_service.update_user(user_id, body, current)
     return ok(data=data, message="user updated")
+@router.delete("/{user_id}", status_code=204)
+async def delete_user(
+    user_id: str,
+    current: dict = Depends(require_admin),
+):
+    await user_service.delete_user(user_id, current)
+    return None
 __all__ = ["router"]

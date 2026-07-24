@@ -1,22 +1,12 @@
 {% extends "base.html" %}
-{% block title %}提交记录{% endblock %}
+{% block title %}测试点日志{% endblock %}
 {% block content %}
 <section class="card">
-<h1 id="page-title">提交记录</h1>
-<form id="filter-form" class="form" onsubmit="event.preventDefault(); loadMySubmissions(window.__currentUser, 1);">
+<h1>测试点日志（教师/管理员）</h1>
+<form id="filter-form" class="form" onsubmit="event.preventDefault(); loadLogs(1);">
 <div class="form-row">
 <label>题目编号</label>
 <input type="text" id="filter-problem" placeholder="如 P1001">
-</div>
-<div class="form-row">
-<label>状态</label>
-<select id="filter-status">
-<option value="">全部</option>
-<option value="pending">pending</option>
-<option value="running">running</option>
-<option value="finished">finished</option>
-<option value="failed">failed</option>
-</select>
 </div>
 <div class="form-row">
 <label>结果</label>
@@ -42,25 +32,24 @@
 </form>
 </section>
 <section class="card">
-<div id="empty" class="empty" style="display:none">暂无提交</div>
-<table id="subs-table" style="display:none">
+<div id="empty" class="empty" style="display:none">暂无日志</div>
+<table id="logs-table" style="display:none">
 <thead>
-<tr><th>提交时间</th><th id="th-submitter">提交人</th><th>题目</th><th>状态</th><th>结果</th><th>得分</th><th>用时</th></tr>
+<tr><th>时间</th><th>提交 ID</th><th>用户名</th><th>测试点</th><th>结果</th><th>得分</th><th>用时</th><th>隐藏</th><th>说明</th></tr>
 </thead>
-<tbody id="subs-body"></tbody>
+<tbody id="logs-body"></tbody>
 </table>
 <p id="loading" class="muted">加载中...</p>
 <div id="pager" class="muted"></div>
 </section>
 {% endblock %}
 {% block scripts %}
-<script src="/static/js/submissions.js"></script>
+<script src="/static/js/admin_logs.js"></script>
 <script>
 (async function() {
-    const user = await requireLogin();
+    const user = await requireRole(['teacher', 'admin']);
     if (!user) return;
-    window.__currentUser = user;
-    await loadMySubmissions(user, 1);
+    await loadLogs(1);
 })();
 </script>
 {% endblock %}

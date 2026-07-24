@@ -35,7 +35,19 @@ async def teacher_problem_new_page(request: Request):
 @router.get("/teacher/problems/{problem_id}/edit")
 async def teacher_problem_edit_page(request: Request, problem_id: str):
     return templates.TemplateResponse(request, "teacher_problem_form.html", {"request": request, "mode": "edit", "problem_id": problem_id})
+@router.get("/teacher/problems/{problem_id}/similarity")
+async def teacher_problem_similarity_page(request: Request, problem_id: str):
+    return templates.TemplateResponse(request, "teacher_similarity.html", {"request": request, "problem_id": problem_id})
 @router.get("/admin/backups")
 async def admin_backups_page(request: Request):
     return templates.TemplateResponse(request, "admin_backups.html", {"request": request})
+@router.get("/admin/users")
+async def admin_users_page(request: Request):
+    return templates.TemplateResponse(request, "admin_users.html", {"request": request})
+@router.get("/admin/logs")
+async def admin_logs_page(request: Request):
+    return templates.TemplateResponse(request, "admin_logs.html", {"request": request})
+@router.get("/admin/audit-logs")
+async def admin_audit_logs_page(request: Request):
+    return templates.TemplateResponse(request, "admin_audit_logs.html", {"request": request})
 __all__ = ["router"]

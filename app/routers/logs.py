@@ -35,6 +35,7 @@ async def list_audit_logs(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
     operator_id: str | None = Query(default=None),
+    operator_username: str | None = Query(default=None),
     action: str | None = Query(default=None),
     target_id: str | None = Query(default=None),
     start_time: str | None = Query(default=None),
@@ -43,8 +44,8 @@ async def list_audit_logs(
 ):
     filters = {
         "page": page, "page_size": page_size,
-        "operator_id": operator_id, "action": action,
-        "target_id": target_id,
+        "operator_id": operator_id, "operator_username": operator_username,
+        "action": action, "target_id": target_id,
         "start_time": start_time, "end_time": end_time,
     }
     data = await log_service.list_audit_logs(filters, user)

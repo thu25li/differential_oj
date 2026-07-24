@@ -26,6 +26,19 @@ class UserService:
             and updates.is_active is False
         ):
             raise BadRequestError("cannot disable yourself")
+        if (
+            user_id == current_user["id"]
+            and updates.role is not None
+            and updates.role.value != current_user["role"]
+        ):
+            raise BadRequestError("cannot change your own role")
+        if (
+            updates.role is not None
+            and updates.role.value != "admin"
+        ):
+            target = await user_repository.get_by_id(user_id)
+            if target and target["role"] == "admin" and await user_repository.count_admins() <= 1:
+                raise BadRequestError("cannot demote the last admin")
         update_dict = {
             "role": updates.role.value if updates.role is not None else None,
             "is_active": updates.is_active,
@@ -58,6 +71,30 @@ class UserService:
             })
         updated = await user_repository.get_by_id(user_id)
         return self._public_view(updated)
+    async def delete_user(self, user_id: str, current_user: dict) -> None:
+        if user_id == current_user["id"]:
+            raise BadRequestError("cannot delete yourself")
+        user = await user_repository.get_by_id(user_id)
+        if user is None:
+            raise NotFoundError("user not found")
+        if user["role"] == "admin" and await user_repository.count_admins() <= 1:
+            raise BadRequestError("cannot delete the last admin")
+        ok = await user_repository.delete(user_id)
+        if not ok:
+            raise NotFoundError("user not found")
+        try:
+            await audit_log_repository.create({
+                "id": generate_uuid(),
+                "operator_id": current_user["id"],
+                "action": "DELETE_USER",
+                "target_type": "user",
+                "target_id": user_id,
+                "success": True,
+                "detail": f"deleted user {user['username']}",
+                "created_at": now_utc(),
+            })
+        except Exception:
+            pass
     @staticmethod
     def _public_view(user: dict) -> dict:
         return {

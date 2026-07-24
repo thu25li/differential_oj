@@ -80,6 +80,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
         'REJUDGE_SUBMISSION',
         'UPDATE_USER_ROLE',
         'DISABLE_USER',
+        'DELETE_USER',
         'CREATE_BACKUP',
         'RESTORE_BACKUP'
     )),

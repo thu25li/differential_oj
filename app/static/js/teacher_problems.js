@@ -26,6 +26,7 @@ async function loadTeacherProblems() {
                 <td class="muted">-</td>
                 <td>
                     <a href="/teacher/problems/${encodeURIComponent(p.id)}/edit" class="btn">编辑</a>
+                    <a href="/teacher/problems/${encodeURIComponent(p.id)}/similarity" class="btn">相似度</a>
                     <button class="btn btn-danger" onclick="deleteProblem('${escapeHtml(p.id)}', '${escapeHtml(p.title)}')">删除</button>
                 </td>
             </tr>

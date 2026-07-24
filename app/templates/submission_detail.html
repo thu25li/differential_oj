@@ -12,6 +12,14 @@
 <p><strong>得分：</strong><span id="score"></span></p>
 <p><strong>总用时：</strong><span id="total-time"></span></p>
 <p id="hint" class="muted"></p>
+<div id="rejudge-box" style="display:none; margin-top: 12px;">
+<button id="rejudge-btn" class="btn btn-primary" onclick="rejudgeSubmission('{{ submission_id }}')">重新评测</button>
+<span id="rejudge-msg" class="muted"></span>
+</div>
+<div id="resubmit-box" style="display:none; margin-top: 12px;">
+<button id="resubmit-btn" class="btn btn-primary" onclick="resubmitCode('{{ submission_id }}')">用原代码重新提交</button>
+<span id="resubmit-msg" class="muted"></span>
+</div>
 </div>
 <h3>测试点日志</h3>
 <div id="cases" class="case-list"></div>
@@ -23,6 +31,7 @@
 (async function() {
     const user = await requireLogin();
     if (!user) return;
+    window.__currentUser = user;
     await pollSubmission('{{ submission_id }}');
 })();
 </script>

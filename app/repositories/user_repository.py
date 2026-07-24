@@ -94,6 +94,18 @@ int]:
         db = await get_db()
         cursor = await db.execute("SELECT COUNT(*) FROM users WHERE role = 'admin'")
         return (await cursor.fetchone())[0]
+    async def delete(self, user_id: str) -> bool:
+        db = await get_db()
+        try:
+            cursor = await db.execute("DELETE FROM users WHERE id = ?", (user_id,))
+            if cursor.rowcount == 0:
+                await db.rollback()
+                return False
+            await db.commit()
+            return True
+        except Exception:
+            await db.rollback()
+            raise
     @staticmethod
     def _row_to_full(row) -> dict:
         return {

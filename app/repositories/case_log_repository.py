@@ -86,9 +86,11 @@ class CaseLogRepository:
         cursor = await db.execute(
             f"""SELECT cl.submission_id, cl.case_id, cl.result, cl.score, cl.time_used,
                        cl.memory_used, cl.exit_code, cl.input_data, cl.stdout, cl.stderr,
-                       cl.expected_output, cl.message, cl.is_hidden, cl.created_at
+                       cl.expected_output, cl.message, cl.is_hidden, cl.created_at,
+                       u.username AS username
                 FROM case_logs cl
                 JOIN submissions s ON cl.submission_id = s.id
+                LEFT JOIN users u ON u.id = s.user_id
                 {where_clause}
                 ORDER BY cl.created_at DESC, cl.id DESC
                 LIMIT ? OFFSET ?""",
@@ -108,6 +110,7 @@ class CaseLogRepository:
     def _row_to_dict(row) -> dict:
         return {
             "submission_id": row["submission_id"],
+            "username": row["username"] if "username" in row.keys() else None,
             "case_id": row["case_id"],
             "result": row["result"],
             "score": row["score"],

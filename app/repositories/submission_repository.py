@@ -48,37 +48,40 @@ class SubmissionRepository:
         where_parts: List[str] = []
         params: List = []
         if problem_id is not None:
-            where_parts.append("problem_id = ?")
+            where_parts.append("s.problem_id = ?")
             params.append(problem_id)
         if user_id is not None:
-            where_parts.append("user_id = ?")
+            where_parts.append("s.user_id = ?")
             params.append(user_id)
         if status is not None:
-            where_parts.append("status = ?")
+            where_parts.append("s.status = ?")
             params.append(status)
         if result is not None:
-            where_parts.append("result = ?")
+            where_parts.append("s.result = ?")
             params.append(result)
         if start_time is not None:
-            where_parts.append("created_at >= ?")
+            where_parts.append("s.created_at >= ?")
             params.append(start_time)
         if end_time is not None:
-            where_parts.append("created_at <= ?")
+            where_parts.append("s.created_at <= ?")
             params.append(end_time)
         where_clause = (" WHERE " + " AND ".join(where_parts)) if where_parts else ""
         offset = (page - 1) * page_size
         cursor = await db.execute(
-            f"""SELECT id, user_id, problem_id, language, status, result,
-                       score, total_time, created_at, started_at, finished_at
-                FROM submissions{where_clause}
-                ORDER BY created_at DESC, id DESC
+            f"""SELECT s.id, s.user_id, s.problem_id, s.language, s.status,
+                       s.result, s.score, s.total_time, s.created_at,
+                       s.started_at, s.finished_at, u.username AS username
+                FROM submissions AS s
+                LEFT JOIN users AS u ON u.id = s.user_id
+                {where_clause}
+                ORDER BY s.created_at DESC, s.id DESC
                 LIMIT ? OFFSET ?""",
             params + [page_size, offset],
         )
         rows = await cursor.fetchall()
         items = [self._row_to_dict(row, include_source=False) for row in rows]
         cursor = await db.execute(
-            f"SELECT COUNT(*) FROM submissions{where_clause}", params
+            f"SELECT COUNT(*) FROM submissions AS s{where_clause}", params
         )
         total = (await cursor.fetchone())[0]
         return items, total
@@ -180,6 +183,7 @@ class SubmissionRepository:
         d = {
             "id": row["id"],
             "user_id": row["user_id"],
+            "username": row["username"] if "username" in row.keys() else None,
             "problem_id": row["problem_id"],
             "language": row["language"],
             "status": row["status"],

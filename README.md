@@ -20,10 +20,12 @@ pip install -r requirements.txt
 
 ```bash
 conda activate oj
-uvicorn app.main:app --reload
+python -m uvicorn app.main:app
 ```
 
 默认监听 `http://127.0.0.1:8000`。
+
+> Windows 下不要使用 `uvicorn ... --reload`：`--reload` 会触发 `SelectorEventLoop`，导致 `asyncio.create_subprocess_exec` 评测子进程失败（提交会显示 SE）。直接 `python -m uvicorn app.main:app` 即可。
 
 - API 文档：`http://127.0.0.1:8000/docs`
 - 前端首页：`http://127.0.0.1:8000/`

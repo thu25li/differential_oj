@@ -49,6 +49,7 @@ class LogService:
         items, total = await audit_log_repository.list(
             page=page, page_size=page_size,
             operator_id=filters.get("operator_id"),
+            operator_username=filters.get("operator_username"),
             action=filters.get("action"),
             target_id=filters.get("target_id"),
             start_time=filters.get("start_time"),

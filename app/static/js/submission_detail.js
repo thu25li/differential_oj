@@ -42,6 +42,60 @@ function renderSubmission(sub) {
     } else {
         hint.textContent = '';
     }
+    const rejudgeBox = document.getElementById('rejudge-box');
+    if (rejudgeBox) {
+        const canRejudge = window.__currentUser
+            && (window.__currentUser.role === 'teacher' || window.__currentUser.role === 'admin')
+            && (sub.status === 'finished' || sub.status === 'failed');
+        rejudgeBox.style.display = canRejudge ? '' : 'none';
+    }
+    const resubmitBox = document.getElementById('resubmit-box');
+    if (resubmitBox) {
+        const canResubmit = sub.status === 'finished' || sub.status === 'failed';
+        resubmitBox.style.display = canResubmit ? '' : 'none';
+    }
+}
+async function resubmitCode(sid) {
+    const btn = document.getElementById('resubmit-btn');
+    const msg = document.getElementById('resubmit-msg');
+    if (btn) btn.disabled = true;
+    if (msg) msg.textContent = '提交中...';
+    try {
+        const r = await fetchSubmission(sid);
+        const sub = r && r.data;
+        if (!sub || !sub.source_code) {
+            if (msg) msg.textContent = '无法获取源代码';
+            return;
+        }
+        const newR = await api('POST', '/api/submissions', {
+            problem_id: sub.problem_id,
+            language: sub.language || 'python',
+            source_code: sub.source_code,
+        });
+        if (newR && newR.data && newR.data.submission_id) {
+            window.location.href = '/submissions/' + encodeURIComponent(newR.data.submission_id);
+        }
+    } catch (e) {
+        if (msg) msg.textContent = '重新提交失败：' + e.message;
+        showError(e.message);
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+}
+async function rejudgeSubmission(sid) {
+    const btn = document.getElementById('rejudge-btn');
+    const msg = document.getElementById('rejudge-msg');
+    if (btn) btn.disabled = true;
+    if (msg) msg.textContent = '已提交，等待重新评测...';
+    try {
+        await api('POST', '/api/submissions/' + encodeURIComponent(sid) + '/rejudge');
+        await pollSubmission(sid);
+    } catch (e) {
+        if (msg) msg.textContent = '重新评测失败：' + e.message;
+        showError(e.message);
+    } finally {
+        if (btn) btn.disabled = false;
+    }
 }
 function renderCases(cases) {
     const el = document.getElementById('cases');

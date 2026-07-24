@@ -55,12 +55,19 @@ function renderNav(user) {
     if (logoutBtn) logoutBtn.style.display = 'inline-block';
     const links = [
         { href: '/problems', text: '题目列表' },
-        { href: '/submissions', text: '我的提交' },
     ];
+    if (user.role === 'student') {
+        links.push({ href: '/submissions', text: '我的提交' });
+    } else {
+        links.push({ href: '/submissions', text: '全部提交记录' });
+    }
     if (user.role === 'teacher' || user.role === 'admin') {
         links.push({ href: '/teacher/problems', text: '题目管理' });
+        links.push({ href: '/admin/logs', text: '测试点日志' });
     }
     if (user.role === 'admin') {
+        links.push({ href: '/admin/users', text: '用户管理' });
+        links.push({ href: '/admin/audit-logs', text: '审计日志' });
         links.push({ href: '/admin/backups', text: '备份管理' });
     }
     for (const l of links) {

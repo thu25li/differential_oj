@@ -4,43 +4,36 @@ function escapeHtml(s) {
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[c]));
 }
-function badgeHtml(value) {
+function badge(value) {
     if (!value) return '<span class="muted">-</span>';
-    const v = String(value).toLowerCase();
-    return '<span class="badge badge-' + v + '">' + value + '</span>';
+    return '<span class="badge badge-' + String(value).toLowerCase() + '">' + value + '</span>';
 }
-let currentPageSize = 50;
+let currentPage = 1;
+let currentPageSize = 20;
 function buildQuery(page) {
     const params = new URLSearchParams();
     params.set('page', page);
     params.set('page_size', currentPageSize);
     const problem = document.getElementById('filter-problem').value.trim();
-    const status = document.getElementById('filter-status').value;
     const result = document.getElementById('filter-result').value;
     const start = document.getElementById('filter-start').value.trim();
     const end = document.getElementById('filter-end').value.trim();
     if (problem) params.set('problem_id', problem);
-    if (status) params.set('status', status);
     if (result) params.set('result', result);
     if (start) params.set('start_time', start);
     if (end) params.set('end_time', end);
     return params.toString();
 }
-async function loadMySubmissions(user, page) {
-    page = page || 1;
+async function loadLogs(page) {
+    currentPage = page;
     const loading = document.getElementById('loading');
-    const table = document.getElementById('subs-table');
+    const table = document.getElementById('logs-table');
     const empty = document.getElementById('empty');
-    const body = document.getElementById('subs-body');
-    const title = document.getElementById('page-title');
-    const thSub = document.getElementById('th-submitter');
+    const body = document.getElementById('logs-body');
     const pager = document.getElementById('pager');
-    const isStudent = user && user.role === 'student';
-    if (title) title.textContent = isStudent ? '我的提交' : '全部提交记录';
-    if (thSub) thSub.style.display = isStudent ? 'none' : '';
     try {
         const qs = buildQuery(page);
-        const r = await api('GET', '/api/submissions?' + qs);
+        const r = await api('GET', '/api/logs?' + qs);
         const data = (r && r.data) || {};
         const items = data.items || [];
         const total = data.total || 0;
@@ -52,16 +45,17 @@ async function loadMySubmissions(user, page) {
             if (pager) pager.textContent = '';
             return;
         }
-        body.innerHTML = items.map(s => `
+        body.innerHTML = items.map(c => `
             <tr>
-                <td>${escapeHtml(s.created_at)}</td>
-                ${isStudent ? '' : `<td>${escapeHtml(s.username || s.user_id || '-')}</td>`}
-                <td><a href="/problems/${encodeURIComponent(s.problem_id)}">${escapeHtml(s.problem_id)}</a></td>
-                <td>${badgeHtml(s.status)}</td>
-                <td>${badgeHtml(s.result)}</td>
-                <td>${s.score}</td>
-                <td>${s.total_time === null || s.total_time === undefined ? '-' : (s.total_time + 's')}</td>
-                <td><a href="/submissions/${encodeURIComponent(s.id)}">详情</a></td>
+                <td>${escapeHtml(c.created_at)}</td>
+                <td><a href="/submissions/${encodeURIComponent(c.submission_id)}">${escapeHtml(c.submission_id.slice(0, 8))}…</a></td>
+                <td>${escapeHtml(c.username || '-')}</td>
+                <td>${escapeHtml(c.case_id)}</td>
+                <td>${badge(c.result)}</td>
+                <td>${c.score}</td>
+                <td>${c.time_used}s</td>
+                <td>${c.is_hidden ? '是' : '否'}</td>
+                <td>${escapeHtml(c.message || '')}</td>
             </tr>
         `).join('');
         if (table) table.style.display = '';
@@ -74,9 +68,8 @@ async function loadMySubmissions(user, page) {
 }
 function resetFilters() {
     document.getElementById('filter-problem').value = '';
-    document.getElementById('filter-status').value = '';
     document.getElementById('filter-result').value = '';
     document.getElementById('filter-start').value = '';
     document.getElementById('filter-end').value = '';
-    loadMySubmissions(window.__currentUser, 1);
+    loadLogs(1);
 }

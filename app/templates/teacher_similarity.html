@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}相似度检测 {{ problem_id }}{% endblock %}
+{% block content %}
+<section class="card">
+<h1>相似度检测（{{ problem_id }}）</h1>
+<p>
+<a href="/teacher/problems" class="btn">返回题目管理</a>
+<a href="/problems/{{ problem_id }}" class="btn">查看题目</a>
+</p>
+<div class="form-row">
+<label for="threshold">阈值（0.0-1.0，默认 0.7）</label>
+<input type="number" id="threshold" step="0.05" min="0" max="1" value="0.7">
+<button id="run-btn" class="btn btn-primary" onclick="runCheck('{{ problem_id }}')">运行检测</button>
+</div>
+<p id="run-msg" class="muted"></p>
+</section>
+<section class="card">
+<h2>相似提交对</h2>
+<div id="empty" class="empty" style="display:none">暂无相似报告，请先点击"运行检测"</div>
+<table id="sim-table" style="display:none">
+<thead>
+<tr><th>提交 A</th><th>提交 B</th><th>相似度</th><th>方法</th><th>检测时间</th></tr>
+</thead>
+<tbody id="sim-body"></tbody>
+</table>
+<p id="loading" class="muted">加载中...</p>
+</section>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/teacher_similarity.js"></script>
+<script>
+(async function() {
+    const user = await requireRole(['teacher', 'admin']);
+    if (!user) return;
+    await loadReports('{{ problem_id }}');
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}审计日志{% endblock %}
+{% block content %}
+<section class="card">
+<h1>审计日志（管理员）</h1>
+<form id="filter-form" class="form" onsubmit="event.preventDefault(); loadAuditLogs(1);">
+<div class="form-row">
+<label>操作人用户名</label>
+<input type="text" id="filter-operator" placeholder="如 admin、student01">
+</div>
+<div class="form-row">
+<label>操作类型</label>
+<select id="filter-action">
+<option value="">全部</option>
+<option value="VIEW_FULL_JUDGE_LOG">VIEW_FULL_JUDGE_LOG</option>
+<option value="REJUDGE_SUBMISSION">REJUDGE_SUBMISSION</option>
+<option value="UPDATE_USER_ROLE">UPDATE_USER_ROLE</option>
+<option value="DISABLE_USER">DISABLE_USER</option>
+<option value="DELETE_USER">DELETE_USER</option>
+<option value="CREATE_BACKUP">CREATE_BACKUP</option>
+<option value="RESTORE_BACKUP">RESTORE_BACKUP</option>
+</select>
+</div>
+<div class="form-row">
+<label>开始时间</label>
+<input type="text" id="filter-start" placeholder="2026-07-01T00:00:00Z">
+</div>
+<div class="form-row">
+<label>结束时间</label>
+<input type="text" id="filter-end" placeholder="2026-07-31T23:59:59Z">
+</div>
+<button type="submit" class="btn btn-primary">查询</button>
+<button type="button" class="btn" onclick="resetFilters()">重置</button>
+</form>
+</section>
+<section class="card">
+<div id="empty" class="empty" style="display:none">暂无审计日志</div>
+<table id="logs-table" style="display:none">
+<thead>
+<tr><th>时间</th><th>操作人</th><th>操作</th><th>目标类型</th><th>目标 ID</th><th>结果</th><th>详情</th></tr>
+</thead>
+<tbody id="logs-body"></tbody>
+</table>
+<p id="loading" class="muted">加载中...</p>
+<div id="pager" class="muted"></div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/admin_audit_logs.js"></script>
+<script>
+(async function() {
+    const user = await requireRole(['admin']);
+    if (!user) return;
+    await loadAuditLogs(1);
+})();
+</script>
+{% endblock %}

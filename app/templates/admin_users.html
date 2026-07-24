@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}用户管理{% endblock %}
+{% block content %}
+<section class="card">
+<h1>用户管理（管理员）</h1>
+<p id="flash" class="flash" style="display:none"></p>
+<div id="empty" class="empty" style="display:none">暂无用户</div>
+<table id="users-table" style="display:none">
+<thead>
+<tr><th>用户名</th><th>角色</th><th>状态</th><th>创建时间</th><th>操作</th></tr>
+</thead>
+<tbody id="users-body"></tbody>
+</table>
+<p id="loading" class="muted">加载中...</p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/admin_users.js"></script>
+<script>
+(async function() {
+    const user = await requireRole(['admin']);
+    if (!user) return;
+    window.__currentUser = user;
+    await loadUsers();
+})();
+</script>
+{% endblock %}
